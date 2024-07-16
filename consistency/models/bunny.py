@@ -1,4 +1,7 @@
+import warnings
+
 import torch
+import transformers
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -7,6 +10,11 @@ from transformers import (
 
 class BunnyModel:
     def __init__(self):
+        # disable some warnings triggered by bunny model
+        transformers.logging.set_verbosity_error()
+        transformers.logging.disable_progress_bar()
+        warnings.filterwarnings("ignore")
+
         self.model = AutoModelForCausalLM.from_pretrained(
             "BAAI/Bunny-v1_1-Llama-3-8B-V",
             torch_dtype=torch.float16,  # float32 for cpu

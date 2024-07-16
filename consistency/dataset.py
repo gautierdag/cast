@@ -2,10 +2,9 @@ import glob
 import json
 
 from PIL import Image
-from torch.utils.data import Dataset
 
 
-class SimilarityPairDataset(Dataset):
+class SimilarityPairDataset:
     def __init__(self, data_dir="data", resize=(512, 512)):
         example_files = glob.glob(data_dir + "/*.json")
         self.data = []
@@ -32,3 +31,6 @@ class SimilarityPairDataset(Dataset):
 
     def __len__(self):
         return len(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
