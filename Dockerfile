@@ -14,9 +14,6 @@ RUN pip3 install -r requirements.txt
 # For some reason needs to be installed separately
 RUN pip3 install flash-attn
 
-COPY entrypoint.sh /etc/entrypoint.sh
-RUN chmod 755 /etc/entrypoint.sh
-
 # copy above docker folder to /consistency and set working directory
 COPY . /consistency
 WORKDIR /consistency
