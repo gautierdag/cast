@@ -14,10 +14,10 @@ class SimilarityPairDataset:
 
             # load image pair
             path_id = file.split("/")[-1].split(".")[0]
-            example["image_0"] = Image.open(f"{data_dir}/{path_id}_0.jpg").convert(
+            example["image_0"] = Image.open(f"{data_dir}/imgs/{path_id}_0.jpg").convert(
                 "RGB"
             )
-            example["image_1"] = Image.open(f"{data_dir}/{path_id}_1.jpg").convert(
+            example["image_1"] = Image.open(f"{data_dir}/imgs/{path_id}_1.jpg").convert(
                 "RGB"
             )
             if resize is not None:

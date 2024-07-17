@@ -1,9 +1,8 @@
 from consistency.utils import get_concat_h
 
-validate_text_only_instructions = """Given two scenes, does the following statement apply to one of the images or to both images? Answer with 'one' or 'both'."""
-validate_image_only_instructions = """Given the two side-by-side images, does the following statement apply to one of the images or to both images? Answer with 'one' or 'both'."""
-validate_both_instructions = """Given two scenes and their corresponding images, does the following statement apply to one of the images or to both images? Answer with 'one' or 'both'."""
-
+validate_text_only_instructions = """Given two scenes, does the following statement apply to only one of the images or to both images? Answer with 'one' or 'both'."""
+validate_image_only_instructions = """Given the two side-by-side images, does the following statement apply to only one of the images or to both images? Answer with 'one' or 'both'."""
+validate_both_instructions = """Given two scenes and their corresponding images, does the following statement apply to only one of the images or to both images? Answer with 'one' or 'both'."""
 
 def similarity_validator(
     model,

@@ -3,3 +3,8 @@ pillow
 transformers
 pydantic
 wandb
+torch
+hydra-core
+einops
+accelerate
+pytest

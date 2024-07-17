@@ -3,10 +3,8 @@ FROM nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
 RUN apt update
 RUN apt upgrade -y
 
-# Install apt packages
-COPY apt.txt apt.txt
-ARG DEBIAN_FRONTEND=noninteractive
-RUN xargs -a apt.txt apt-get install -y --no-install-recommends && rm -rf /var/cache/*
+# Install python
+RUN apt install -y python3 python3-pip python3-dev git git-lfs
 
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt

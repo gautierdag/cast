@@ -8,9 +8,9 @@ class ConsistencyConfig(BaseModel):
 
 
 class WandbConfig(BaseModel):
-    project: str
-    entity: str
-    mode: str
+    project: str = "consistency"
+    entity: str = "itl"
+    mode: str = "online"
 
 
 class LaunchConfig(BaseModel):

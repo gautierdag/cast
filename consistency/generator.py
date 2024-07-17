@@ -3,8 +3,8 @@ from consistency.utils import get_concat_h
 
 
 generate_text_only_instructions = """Given two scenes, find up to five similarities between each scene. Output each similarity in a list."""
-generate_image_only_instructions = """Given the two side-by-side images, find up to five similarities between each image.  Output each similarity in a list."""
-generate_both_instructions = """Given two scenes and their corresponding images, find up to five similarities between each scene.  Output each similarity in a list."""
+generate_image_only_instructions = """Given the two side-by-side images, find up to five similarities between each image. Output each similarity in a list."""
+generate_both_instructions = """Given two scenes and their corresponding images, find up to five similarities between each scene. Output each similarity in a list."""
 
 
 def similarity_generator(model, example: dict, mode="text") -> list[str]:

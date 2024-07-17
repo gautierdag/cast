@@ -1,9 +1,0 @@
-unzip
-psmisc 
-wget
-python3
-python-is-python3
-python3-packaging
-pip
-bc
-gcc

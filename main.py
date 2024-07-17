@@ -8,7 +8,7 @@ import wandb
 
 from consistency.config import EvalConfig
 from consistency.dataset import SimilarityPairDataset
-from consistency.models.bunny import BunnyModel
+from consistency.models import model_factory
 from consistency.validator import similarity_validator
 from consistency.generator import similarity_generator
 
@@ -21,17 +21,21 @@ def main(cfg):
     logger.info(cfg)
     cfg = EvalConfig(**dict(cfg))
 
+    # Add requirement for wandb core
+    wandb.require("core")
+
     wandb.init(
-        project="consistency",
         name=f"{cfg.consistency.model}",
-        mode="disabled",
+        project=cfg.wandb.project,
+        entity=cfg.wandb.entity,
+        mode=cfg.wandb.mode,
         config=cfg.model_dump(),
     )
 
     print("Loading dataset")
     dataset = SimilarityPairDataset(data_dir="data")
     print("Loading Model")
-    model = BunnyModel()
+    model = model_factory(cfg.consistency.model)
     statements = []
     for example in dataset:
         for modality in ["text", "image", "both"]:

@@ -1,22 +1,21 @@
-# import torch
-# from transformers import (
-#     AutoModelForCausalLM,
-#     AutoTokenizer,
-# )
+import torch
+from transformers import (
+    LlavaNextProcessor,
+    LlavaNextForConditionalGeneration,
+)
 
 
 class LlavaModel:
     def __init__(self):
-        pass
-        # self.model = AutoModelForCausalLM.from_pretrained(
-        # #
-        #     torch_dtype=torch.float16,  # float32 for cpu
-        #     device_map="auto",
-        #     trust_remote_code=True,
-        # )
-        # self.tokenizer = AutoTokenizer.from_pretrained(
-        #     "BAAI/Bunny-v1_1-Llama-3-8B-V", trust_remote_code=True
-        # )
+        self.processor = LlavaNextProcessor.from_pretrained(
+            "llava-hf/llava-v1.6-mistral-7b-hf",
+        )
+        self.model = LlavaNextForConditionalGeneration.from_pretrained(
+            "llava-hf/llava-v1.6-mistral-7b-hf",
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+            device_map="auto",
+        )
 
     def generate(
         self,
@@ -24,11 +23,13 @@ class LlavaModel:
         image=None,
         max_new_tokens=256,
     ) -> str:
-        inputs = self.tokenizer(text=text, images=image, return_tensors="pt").to(
+        # wrap text in [INST]...[/INST] to indicate it is an instruction
+        text = f"[INST] {text} [/INST]"
+        inputs = self.processor(text=text, images=image, return_tensors="pt").to(
             self.model.device
         )
         inputs["input_ids"][inputs["input_ids"] == 64003] = 64000
         output = self.model.generate(
             **inputs, max_new_tokens=max_new_tokens, do_sample=False
         )
-        return self.tokenizer.decode(output[0], skip_special_tokens=True)
+        return self.processor.decode(output[0], skip_special_tokens=True)
