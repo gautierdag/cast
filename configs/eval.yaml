@@ -2,6 +2,7 @@ consistency:
   model: bunny
   num_generations: 1
   output_dir: "outputs"
+  special_run_name: "UA-wrapper"
 wandb:
   project: "consistency"
   entity: "itl"

@@ -5,6 +5,7 @@ class ConsistencyConfig(BaseModel):
     model: str
     num_generations: int
     output_dir: str
+    special_run_name: str = ""
 
 
 class WandbConfig(BaseModel):

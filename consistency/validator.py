@@ -4,6 +4,7 @@ validate_text_only_instructions = """Given two scenes, does the following statem
 validate_image_only_instructions = """Given the two side-by-side images, does the following statement apply to only one of the images or to both images? Answer with 'one' or 'both'."""
 validate_both_instructions = """Given two scenes and their corresponding images, does the following statement apply to only one of the images or to both images? Answer with 'one' or 'both'."""
 
+
 def similarity_validator(
     model,
     example: dict,
@@ -19,15 +20,17 @@ def similarity_validator(
     image_1 = example["image_1"]
     if mode == "text":
         image = None
-        prompt = f"{validate_text_only_instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nStatement:{statement}\n\nAnswer:"
+        prompt = f"{validate_text_only_instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nStatement:{statement}"
     elif mode == "image":
         image = get_concat_h(image_0, image_1)
-        prompt = f"{validate_image_only_instructions}<image>\n\nStatement:{statement}\n\nAnswer:"
+        prompt = f"<image>\n{validate_image_only_instructions}\n\nStatement:{statement}"
     elif mode == "both":
         image = get_concat_h(image_0, image_1)
-        prompt = f"{validate_both_instructions}<image>\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nStatement:{statement}\n\nAnswer:"
+        prompt = f"<image>\n{validate_both_instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nStatement:{statement}"
     else:
         raise ValueError("mode should be 'text' or 'image'")
-    pred = model.generate(prompt, max_new_tokens=16, image=image)
+    pred = model.generate(
+        prompt, max_new_tokens=16, image=image, start_decode="Answer:"
+    )
     pred = pred.split("Answer:")[-1].lower().strip(".").strip()
     return pred

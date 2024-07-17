@@ -1,7 +1,6 @@
 import warnings
 
 import torch
-import transformers
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -11,8 +10,6 @@ from transformers import (
 class BunnyModel:
     def __init__(self):
         # disable some warnings triggered by bunny model
-        transformers.logging.set_verbosity_error()
-        transformers.logging.disable_progress_bar()
         warnings.filterwarnings("ignore")
 
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -26,28 +23,24 @@ class BunnyModel:
         )
 
     def generate(
-        self,
-        text: str,
-        image=None,
-        max_new_tokens=256,
+        self, instructions: str, image=None, max_new_tokens=256, start_decode: str = ""
     ) -> str:
+        prompt = f" USER: {instructions} ASSISTANT: {start_decode}"
         if image is None:
-            input_ids = self.tokenizer(text, return_tensors="pt").input_ids.to(
-                self.model.device
-            )
+            inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
             # generate
             output = self.model.generate(
-                input_ids,
+                **inputs,
                 max_new_tokens=max_new_tokens,
                 use_cache=True,
                 do_sample=False,
             )[0]
         else:
             assert (
-                "<image>" in text
+                "<image>" in prompt
             ), "Prompt should contain '<image>' to insert the image."
             text_chunks = [
-                self.tokenizer(chunk).input_ids for chunk in text.split("<image>")
+                self.tokenizer(chunk).input_ids for chunk in prompt.split("<image>")
             ]
             input_ids = (
                 torch.tensor(
@@ -56,12 +49,14 @@ class BunnyModel:
                 .unsqueeze(0)
                 .to(self.model.device)
             )
+            attention_mask = torch.ones_like(input_ids)
             image_tensor = self.model.process_images([image], self.model.config).to(
                 dtype=self.model.dtype, device=self.model.device
             )
             # generate
             output = self.model.generate(
                 input_ids,
+                attention_mask=attention_mask,
                 images=image_tensor,
                 max_new_tokens=max_new_tokens,
                 use_cache=True,

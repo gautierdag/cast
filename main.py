@@ -4,6 +4,7 @@ import warnings
 import hydra
 import pandas as pd
 import wandb
+from tqdm import tqdm
 
 
 from consistency.config import EvalConfig
@@ -21,27 +22,30 @@ def main(cfg):
     logger.info(cfg)
     cfg = EvalConfig(**dict(cfg))
 
+    print("Loading dataset")
+    dataset = SimilarityPairDataset(data_dir="data")
+    print("Loading Model")
+    model = model_factory(cfg.consistency.model)
+
     # Add requirement for wandb core
     wandb.require("core")
 
     wandb.init(
-        name=f"{cfg.consistency.model}",
+        name=f"{cfg.consistency.model}-{cfg.consistency.special_run_name}",
         project=cfg.wandb.project,
         entity=cfg.wandb.entity,
         mode=cfg.wandb.mode,
         config=cfg.model_dump(),
     )
 
-    print("Loading dataset")
-    dataset = SimilarityPairDataset(data_dir="data")
-    print("Loading Model")
-    model = model_factory(cfg.consistency.model)
     statements = []
-    for example in dataset:
+    for example in tqdm(dataset):
         for modality in ["text", "image", "both"]:
             generated_similarity_statements = similarity_generator(
                 model, example, mode=modality
             )
+            print(modality)
+            print(generated_similarity_statements)
             for generated_similarity_statement in generated_similarity_statements:
                 text_check = similarity_validator(
                     model,

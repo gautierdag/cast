@@ -17,16 +17,18 @@ def similarity_generator(model, example: dict, mode="text") -> list[str]:
     image_1 = example["image_1"]
     if mode == "text":
         image = None
-        prompt = f"{generate_text_only_instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nSimilarities:\n\n"
+        prompt = f"{generate_text_only_instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}"
     elif mode == "image":
         image = get_concat_h(image_0, image_1)
-        prompt = f"{generate_image_only_instructions}<image>\n\nSimilarities:\n\n"
+        prompt = f"<image>\n{generate_image_only_instructions}"
     elif mode == "both":
         image = get_concat_h(image_0, image_1)
-        prompt = f"{generate_both_instructions}<image>\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nSimilarities:\n\n"
+        prompt = f"<image>\n{generate_both_instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}"
     else:
         raise ValueError("mode should be 'text' or 'image'")
-    pred = model.generate(prompt, max_new_tokens=128, image=image)
+    pred = model.generate(
+        prompt, max_new_tokens=128, image=image, start_decode="Similarities:\n\n1."
+    )
     statements = pred.split("Similarities:\n\n")[-1].split("\n")
     statements = [re.sub(r"^\d+\.\s*", "", s) for s in statements]
     return statements
