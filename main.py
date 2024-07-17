@@ -22,9 +22,9 @@ def main(cfg):
     logger.info(cfg)
     cfg = EvalConfig(**dict(cfg))
 
-    print("Loading dataset")
+    logger.info("Loading dataset")
     dataset = SimilarityPairDataset(data_dir="data")
-    print("Loading Model")
+    logger.info("Loading Model")
     model = model_factory(cfg.consistency.model)
 
     # Add requirement for wandb core
@@ -44,9 +44,9 @@ def main(cfg):
             generated_similarity_statements = similarity_generator(
                 model, example, mode=modality
             )
-            print(modality)
-            print(generated_similarity_statements)
-            for generated_similarity_statement in generated_similarity_statements:
+            for generated_idx, generated_similarity_statement in enumerate(
+                generated_similarity_statements
+            ):
                 text_check = similarity_validator(
                     model,
                     example,
@@ -68,6 +68,7 @@ def main(cfg):
                 statements.append(
                     {
                         "dataset_idx": example["id"],
+                        "generated_idx": generated_idx,  # can track whether position of generated statement has effect on evaluation
                         "statement": generated_similarity_statement,
                         "generated_with": modality,
                         "eval_text": text_check,
