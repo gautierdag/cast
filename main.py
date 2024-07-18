@@ -3,15 +3,14 @@ import warnings
 
 import hydra
 import pandas as pd
-import wandb
 from tqdm import tqdm
 
-
+import wandb
 from consistency.config import EvalConfig
 from consistency.dataset import SimilarityPairDataset
+from consistency.generator import similarity_generator
 from consistency.models import model_factory
 from consistency.validator import similarity_validator
-from consistency.generator import similarity_generator
 
 warnings.filterwarnings("ignore")
 logger = logging.getLogger(__name__)
@@ -40,42 +39,34 @@ def main(cfg):
 
     statements = []
     for example in tqdm(dataset):
-        for modality in ["text", "image", "both"]:
-            generated_similarity_statements = similarity_generator(
+        for modality in cfg.consistency.generate_modalities:
+            generated_text, generated_similarity_statements = similarity_generator(
                 model, example, mode=modality
             )
             for generated_idx, generated_similarity_statement in enumerate(
                 generated_similarity_statements
             ):
-                text_check = similarity_validator(
-                    model,
-                    example,
-                    statement=generated_similarity_statement,
-                    mode="text",
-                )
-                image_check = similarity_validator(
-                    model,
-                    example,
-                    statement=generated_similarity_statement,
-                    mode="image",
-                )
-                both_check = similarity_validator(
-                    model,
-                    example,
-                    statement=generated_similarity_statement,
-                    mode="both",
-                )
-                statements.append(
-                    {
-                        "dataset_idx": example["id"],
-                        "generated_idx": generated_idx,  # can track whether position of generated statement has effect on evaluation
-                        "statement": generated_similarity_statement,
-                        "generated_with": modality,
-                        "eval_text": text_check,
-                        "eval_image": image_check,
-                        "eval_both": both_check,
-                    }
-                )
+                statement = {
+                    "dataset_idx": example["id"],
+                    "generated_idx": generated_idx,  # can track whether position of generated statement has effect on evaluation
+                    "statement": generated_similarity_statement,
+                    "generated_with": modality,
+                    "generated_statement_text": generated_text,
+                }
+
+                for prompt_type in cfg.consistency.validate_prompt_type:
+                    for validate_modality in cfg.consistency.validate_modalities:
+                        validate_response = similarity_validator(
+                            model,
+                            example,
+                            statement=generated_similarity_statement,
+                            mode=validate_modality,
+                            prompt_type=prompt_type,
+                        )
+                        statement[f"validate_{validate_modality}_{prompt_type}"] = (
+                            validate_response
+                        )
+                statements.append(statement)
     statements_df = pd.DataFrame(statements)
     # save to wandb
     wandb.log({"evaluated_statements": wandb.Table(dataframe=statements_df)})

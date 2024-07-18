@@ -6,6 +6,9 @@ class ConsistencyConfig(BaseModel):
     num_generations: int
     output_dir: str
     special_run_name: str = ""
+    validate_modalities: list[str] = ["text", "image", "both"]
+    generate_modalities: list[str] = ["text", "image", "both"]
+    validate_prompt_type: list[str] = ["both|one", "true|false", "yes|no"]
 
 
 class WandbConfig(BaseModel):

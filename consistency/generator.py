@@ -7,7 +7,7 @@ generate_image_only_instructions = """Given the two side-by-side images, find up
 generate_both_instructions = """Given two scenes and their corresponding images, find up to five similarities between each scene. Output each similarity in a list."""
 
 
-def similarity_generator(model, example: dict, mode="text") -> list[str]:
+def similarity_generator(model, example: dict, mode="text") -> tuple[str, list[str]]:
     """
     Generates a list of statements that describe the similarities between two scenes or images.
     """
@@ -29,6 +29,7 @@ def similarity_generator(model, example: dict, mode="text") -> list[str]:
     pred = model.generate(
         prompt, max_new_tokens=128, image=image, start_decode="Similarities:\n\n1."
     )
-    statements = pred.split("Similarities:\n\n")[-1].split("\n")
-    statements = [re.sub(r"^\d+\.\s*", "", s) for s in statements]
-    return statements
+    response = pred.split("Similarities:\n\n")[-1]
+    # process response
+    statements = [re.sub(r"^\d+\.\s*", "", s) for s in response.split("\n")]
+    return (response, statements)

@@ -1,8 +1,8 @@
 consistency:
-  model: bunny
+  model: llava
   num_generations: 1
   output_dir: "outputs"
-  special_run_name: "UA-wrapper"
+  special_run_name: "all-validate-prompts"
 wandb:
   project: "consistency"
   entity: "itl"
