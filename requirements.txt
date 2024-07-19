@@ -9,3 +9,4 @@ einops
 accelerate
 pytest
 torchvision
+openai

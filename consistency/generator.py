@@ -2,9 +2,9 @@ import re
 from consistency.utils import get_concat_h
 
 
-generate_text_only_instructions = """Given two scenes, find up to five similarities between each scene. Output each similarity in a list."""
-generate_image_only_instructions = """Given the two side-by-side images, find up to five similarities between each image. Output each similarity in a list."""
-generate_both_instructions = """Given two scenes and their corresponding images, find up to five similarities between each scene. Output each similarity in a list."""
+generate_text_only_instructions = """Given two scenes, find up to five similarities between each scene. Output each similarity in a numbered list."""
+generate_image_only_instructions = """Given the two side-by-side images, find up to five similarities between each image. Output each similarity in a numbered list."""
+generate_both_instructions = """Given two scenes and their corresponding images, find up to five similarities between each scene. Output each similarity in a numbered list."""
 
 
 def similarity_generator(model, example: dict, mode="text") -> tuple[str, list[str]]:
@@ -31,5 +31,9 @@ def similarity_generator(model, example: dict, mode="text") -> tuple[str, list[s
     )
     response = pred.split("Similarities:\n\n")[-1]
     # process response
-    statements = [re.sub(r"^\d+\.\s*", "", s) for s in response.split("\n")]
+    statements = [
+        re.sub(r"^\d+\.\s*", "", s)
+        for s in response.split("\n")
+        if re.match(r"^\d+\.\s*", s)
+    ]
     return (response, statements)
