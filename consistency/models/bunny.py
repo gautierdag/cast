@@ -25,6 +25,12 @@ class BunnyModel:
     def generate(
         self, instructions: str, image=None, max_new_tokens=256, start_decode: str = ""
     ) -> str:
+        """
+        Given an instruction and an optional image, generate a response of maximum length `max_new_tokens`.
+
+        Start decode is a string that will be appended after the instructions.
+        For instance to start the assistant response.
+        """
         prompt = f" USER: {instructions} ASSISTANT: {start_decode}"
         if image is None:
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)

@@ -28,6 +28,12 @@ class LlavaModel:
         max_new_tokens=256,
         start_decode: str = "",
     ) -> str:
+        """
+        Given an instruction and an optional image, generate a response of maximum length `max_new_tokens`.
+
+        Start decode is a string that will be appended after the instructions.
+        For instance to start the assistant response.
+        """
         # wrap text in [INST]...[/INST] to indicate it is an instruction
         prompt = f"[INST] {instructions} [/INST] {start_decode}"
         inputs = self.processor(text=prompt, images=image, return_tensors="pt").to(
