@@ -55,10 +55,10 @@ class GPT4OMini:
             temperature=0,
             max_tokens=max_new_tokens,
         )
-        response = response["choices"][0]["message"]["content"]
+        out_message = response.choices[0].message.content
 
-        self.cache[instructions] = response
+        self.cache[instructions] = out_message
         with open(self.cache_location, "w") as f:
             json.dump(self.cache, f)
 
-        return response.choices[0].message.content
+        return out_message
