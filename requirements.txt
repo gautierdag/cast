@@ -10,3 +10,6 @@ accelerate
 pytest
 torchvision
 openai
+sentencepiece
+timm
+flash-attn
