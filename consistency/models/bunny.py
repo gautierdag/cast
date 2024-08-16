@@ -27,6 +27,7 @@ class BunnyModel:
     ) -> str:
         """
         Given an instruction and an optional image, generate a response of maximum length `max_new_tokens`.
+        The image will be a list of PIL.Image objects for In-Context Learning.
 
         Start decode is a string that will be appended after the instructions.
         For instance to start the assistant response.
@@ -48,15 +49,18 @@ class BunnyModel:
             text_chunks = [
                 self.tokenizer(chunk).input_ids for chunk in prompt.split("<image>")
             ]
-            input_ids = (
-                torch.tensor(
-                    text_chunks[0] + [-200] + text_chunks[1][1:], dtype=torch.long
-                )
-                .unsqueeze(0)
-                .to(self.model.device)
-            )
+            input_ids = []
+            for idx, chunk in enumerate(text_chunks):
+                input_ids.extend(chunk)
+                if idx != len(text_chunks) - 1:
+                    input_ids.extend([-200])
+            input_ids = torch.tensor(input_ids, dtype=torch.long).unsqueeze(0).to(self.model.device)
             attention_mask = torch.ones_like(input_ids)
-            image_tensor = self.model.process_images([image], self.model.config).to(
+
+            ## Pass list of images for in-Context learning
+            if not isinstance(image, list):
+                image = [image]
+            image_tensor = self.model.process_images(image, self.model.config).to(
                 dtype=self.model.dtype, device=self.model.device
             )
             # generate

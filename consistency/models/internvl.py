@@ -35,7 +35,11 @@ class InternVLModel:
         For instance to start the assistant response.
         """
         if image is not None:
-            image = self.load_image(image)
+            ## in case of multi-image inference
+            if isinstance(image, torch.Tensor):
+                image = image.to(self.model.device)
+            else:
+                image = self.load_image(image)
             msgs = instructions.replace("<image>", "") + "\n" + start_decode
         else:
             msgs = instructions + "\n" + start_decode
@@ -132,3 +136,9 @@ class InternVLModel:
         pixel_values = torch.stack(pixel_values)
         pixel_values = pixel_values.to(torch.float16).to(self.model.device)
         return pixel_values
+    
+
+    def get_concat_h(self, image_file, image_file_2):
+        image1 = self.load_image(image_file, max_num=6)
+        image2 = self.load_image(image_file_2, max_num=6)
+        return torch.cat((image1, image2), dim=0)
