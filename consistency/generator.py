@@ -20,7 +20,7 @@ def similarity_generator(model, example: dict, mode="text") -> tuple[str, list[s
     get_concat_h_func = get_concat_h
     if hasattr(model, "get_concat_h"):
         get_concat_h_func = model.get_concat_h
- 
+
     if mode == "text":
         image = None
         prompt = f"{generate_text_only_instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}"
@@ -44,7 +44,10 @@ def similarity_generator(model, example: dict, mode="text") -> tuple[str, list[s
     ]
     return (response, statements)
 
-def similarity_generator_with_ICL(model, example: dict, mode="text", icl_prompt=None, icl_image=None) -> tuple[str, list[str]]:
+
+def similarity_generator_with_ICL(
+    model, example: dict, mode="text", icl_prompt=None, icl_image=None
+) -> tuple[str, list[str]]:
     """
     Generates a list of statements that describe the similarities between two scenes or images.
     """
@@ -82,7 +85,7 @@ def similarity_generator_with_ICL(model, example: dict, mode="text", icl_prompt=
             prompt = f"{generate_both_instructions}\n\n{icl_prompt}\n\n<image>\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}"
     else:
         raise ValueError("mode should be 'text' or 'image'")
-    
+
     pred = model.generate(
         prompt, max_new_tokens=128, image=image, start_decode="Similarities:\n\n1."
     )

@@ -34,6 +34,11 @@ def similarity_validator(
     image_0 = example["image_0"]
     image_1 = example["image_1"]
 
+    ## Check if the model has a get_concat_h method for multi-image inference
+    get_concat_h_func = get_concat_h
+    if hasattr(model, "get_concat_h"):
+        get_concat_h_func = model.get_concat_h
+
     if prompt_type not in validation_instruction_prompts:
         raise ValueError(
             f"prompt_type should be one of {list(validation_instruction_prompts.keys())}"
@@ -44,10 +49,10 @@ def similarity_validator(
         image = None
         prompt = f"{instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nStatement:{statement}"
     elif mode == "image":
-        image = get_concat_h(image_0, image_1)
+        image = get_concat_h_func(image_0, image_1)
         prompt = f"<image>\n{instructions}\n\nStatement:{statement}"
     elif mode == "both":
-        image = get_concat_h(image_0, image_1)
+        image = get_concat_h_func(image_0, image_1)
         prompt = f"<image>\n{instructions}\n\nScene 1:\n\n{scene_0}\n\nScene 2:\n\n{scene_1}\n\nStatement:{statement}"
     else:
         raise ValueError("mode should be 'text' or 'image'")

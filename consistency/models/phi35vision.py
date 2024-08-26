@@ -2,6 +2,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoProcessor,
 )
+from PIL import Image
 
 
 class PhiModel:
@@ -17,6 +18,9 @@ class PhiModel:
             "microsoft/Phi-3.5-vision-instruct", trust_remote_code=True, num_crops=4
         )
 
+    def get_concat_h(self, image_1, image_2) -> list:
+        return [image_1, image_2]
+
     def generate(
         self,
         instructions: str,
@@ -30,17 +34,33 @@ class PhiModel:
         Start decode is a string that will be appended after the instructions.
         For instance to start the assistant response.
         """
-        # wrap text in [INST]...[/INST] to indicate it is an instruction
-        # prompt = f"[INST] {instructions} [/INST] {start_decode}"
-        # inputs = self.processor(text=prompt, images=image, return_tensors="pt").to(
-        #     self.model.device
-        # )
-        # inputs["input_ids"][inputs["input_ids"] == 64003] = 64000
-        # output = self.model.generate(
-        #     **inputs,
-        #     max_new_tokens=max_new_tokens,
-        #     do_sample=False,
-        #     use_cache=True,
-        # )
-        # return self.processor.decode(output[0], skip_special_tokens=True)
-        raise NotImplementedError("PhiModel.generate is not implemented yet.")
+
+        phi_instructions = instructions
+        if isinstance(image, list):
+            if len(image) == 2:
+                phi_instructions = phi_instructions.replace(
+                    "<image>", "<|image_1|>\n<|image_2|>\n"
+                )
+            elif len(image) == 1:
+                phi_instructions = phi_instructions.replace("<image>", "<|image_1|>\n")
+            else:
+                raise ValueError("Only 1 or 2 images are supported")
+
+        elif image is not None:
+            raise ValueError("Should provide a list of images")
+            # phi_instructions = phi_instructions.replace("<image>", "<|image_1|>\n")
+
+        prompt = f"<|user|>\n{phi_instructions}\n<|end|>\n<|assistant|>\n{start_decode}"
+
+        inputs = self.processor(text=prompt, images=image, return_tensors="pt").to(
+            self.model.device
+        )
+        output = self.model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            use_cache=True,
+        )
+        # remove input tokens
+        generate_ids = output[:, inputs["input_ids"].shape[1] :]
+        return self.processor.decode(generate_ids[0], skip_special_tokens=True)
