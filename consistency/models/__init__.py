@@ -3,6 +3,7 @@ from .llava import LlavaModel
 from .gpt4o import GPT4OMini
 from .minicpm import MiniCPMModel
 from .internvl import InternVLModel
+from .phi35vision import PhiModel
 
 
 def model_factory(model_type: str):
@@ -16,5 +17,7 @@ def model_factory(model_type: str):
         return MiniCPMModel()
     elif model_type == "internvl":
         return InternVLModel()
+    elif model_type == "phivision":
+        return PhiModel()
     else:
         raise ValueError(f"Unknown model type: {model_type}")
