@@ -111,6 +111,9 @@ def get_merged_metrics_df(sub_dfs, statement_idx):
                         "validate_both_avg_yes", "validate_both_avg_both", "validate_both_avg", "validate_both_avg_avg"
                         ]]
 
+    with open(f"/home/multimodal-self-consistency/plots/results_{statement_idx}.tex", 'w') as tf:
+        tf.write(df_merged.to_latex(float_format="%.2f"))
+
     dropcolumns = ["validate_text_avg_yes", "validate_text_avg_both", "validate_text_avg", "validate_image_avg_yes", "validate_image_avg_both", "validate_image_avg",
             "validate_both_avg_yes", "validate_both_avg_both", "validate_both_avg"]
 
