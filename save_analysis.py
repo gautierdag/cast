@@ -32,9 +32,15 @@ def get_validator(col_name: str):
     positive, negative = col_name.split("_")[-1].split("|")
 
     def parse_validator(x):
-        if x.lower().startswith(positive):
+        answer = x.strip("*").lower()
+        if answer.startswith(positive) or "applies to both" in answer or answer.startswith("yes") or answer.startswith("true"):
             return 1
-        elif x.lower().startswith(negative):
+        elif (
+            answer.startswith(negative)
+            or answer.startswith("neither")
+            or "does not apply" in answer
+            or answer.startswith("no")
+        ):
             return 0
         else:
             # print(x)
@@ -92,7 +98,7 @@ def get_merged_metrics_df(sub_dfs, statement_idx):
                     "validate_image_avg": "mean",
                     "validate_both_avg": "mean",
                 }
-            )
+            ).sort_values(["model","generated_with"], ascending=False)
 
         agg_dfs[key] = copy.deepcopy(df_agg)
     
@@ -111,13 +117,16 @@ def get_merged_metrics_df(sub_dfs, statement_idx):
                         "validate_both_avg_yes", "validate_both_avg_both", "validate_both_avg", "validate_both_avg_avg"
                         ]]
 
-    with open(f"/home/multimodal-self-consistency/plots/results_{statement_idx}.tex", 'w') as tf:
+    with open(f"/home/multimodal-self-consistency/plots/full_results_{statement_idx}.tex", 'w') as tf:
         tf.write(df_merged.to_latex(float_format="%.2f"))
 
     dropcolumns = ["validate_text_avg_yes", "validate_text_avg_both", "validate_text_avg", "validate_image_avg_yes", "validate_image_avg_both", "validate_image_avg",
             "validate_both_avg_yes", "validate_both_avg_both", "validate_both_avg"]
 
     df_merged.drop(columns=dropcolumns, inplace=True)
+    with open(f"/home/multimodal-self-consistency/plots/results_{statement_idx}.tex", 'w') as tf:
+        tf.write(df_merged.to_latex(float_format="%.2f"))
+
     df_merged.reset_index(inplace=True)
     df_agg1 = df_merged[df_merged["generated_with"] == "text"][["model", "generated_with", "validate_text_avg_avg"]]
     df_agg2 = df_merged[df_merged["generated_with"] == "image"][["model", "generated_with", "validate_image_avg_avg"]]
@@ -134,7 +143,9 @@ def get_merged_metrics_df(sub_dfs, statement_idx):
 def save_heatmap(df2, statement_idx):
     _df2 = df2.copy()
     _df2.rename(columns={"validate_text_avg_avg": "text", "validate_image_avg_avg": "image", "validate_both_avg_avg": "both"}, inplace=True)
+    _df2 = _df2.sort_values("model")
 
+    # _df2 = _df2[["model", "text", "image", "both"]]
     _df2 = _df2[["model", "text", "image", "both"]]
     _df2.set_index("model", inplace=True)
 
@@ -143,21 +154,21 @@ def save_heatmap(df2, statement_idx):
     _df2["both"] = _df2["both"].astype(float)
 
     # Plot heat map for df2
-    plt.figure(figsize=(12, 12))
+    plt.figure(figsize=(16, 24))
     sns_plot = sns.heatmap(_df2, annot=True, cmap="coolwarm", fmt=".2f")
     # plt.title("Consistency")
     plt.xlabel("")
     plt.ylabel("")
-    plt.xticks(fontsize=22)
-    plt.yticks(fontsize=22)
+    plt.xticks(fontsize=28)
+    plt.yticks(fontsize=28)
 
     ## increase font size of the values in the heatmap
     for text in sns_plot.texts:
-        text.set_fontsize(28)
+        text.set_fontsize(48)
 
     ## increase font size of the color bar
     cbar = sns_plot.collections[0].colorbar
-    cbar.ax.tick_params(labelsize=20)
+    cbar.ax.tick_params(labelsize=30)
 
     ## save sns plot
     sns_plot.figure.savefig(f"/home/multimodal-self-consistency/plots/consistency_{statement_idx+1}_statements.png", bbox_inches="tight")
@@ -169,10 +180,14 @@ if __name__ == "__main__":
     entity = "itl"
     our_models = {
         "Bunny": "bunny-all-validate-prompts",
-        "LLaVA": "llava-all-validate-prompts",
+        "LLaVA1.6": "llava-all-validate-prompts",
         "MiniCPM": "minicpm2-minicpm-all-validate-prompts",
         "InternVL2": "internvl-all-validate-prompts",
-        "GPT-4o-Mini": "gpt4o-mini-"
+        "GPT4o-M": "gpt4o-mini-",
+        "LLaVA1.5": "llava15-1.5-7b-base",
+        "RLAIF": "llava15-1.5-7b-RLAIF-V",
+        "LLaVA-L": "llava_next-llama3-8b-instruct",
+        "Phi-V": "phivision-all-validate-prompts"
     }
 
     master_df = get_runs_from_wandb(project, entity)
