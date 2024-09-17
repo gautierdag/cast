@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository contains the code for the paper ...
+This repository contains the code for the paper CAST: Cross-modal Alignment Similarity Test for Vision Language Models
 
 ### Dataset
 
@@ -21,3 +21,7 @@ The code is implemented in Python 3.12. To install the required packages, run th
 ```bash
 pip install -r requirements.txt
 ```
+
+### Run
+
+To run CAST on our generated DOCCI subset, edit the `configs/eval.yaml` with desired configuration and run `python main.py`.
